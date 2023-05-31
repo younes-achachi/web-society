@@ -110,7 +110,7 @@ const UserWidget = ({ userId, picturePath }) => {
 					<FlexBetween gap="1rem">
 						<img src="../assets/linkedin.png" />
 						<Box>
-							<Typography color={main} fontweight="500">
+							<Typography color={main} fontWeight="500">
 								Linkedin
 							</Typography>
 							<Typography color={medium}>Network Platform</Typography>

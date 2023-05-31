@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
 	mode: 'light',
-	user: { firstName: 'achachi', lastName: 'younes' },
+	user: null,
 	token: null,
 	posts: []
 };

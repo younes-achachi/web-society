@@ -3,9 +3,12 @@ import User from '../models/User.js';
 // CREATE
 
 export const createPost = async (req, res) => {
+	console.log(req.body, 'body1');
 	try {
 		const { userId, description, picturePath } = req.body;
+		console.log(req.body, 'body');
 		const user = await User.findById(userId);
+		console.log(user);
 		const newPost = new Post({
 			userId,
 			firstName: user.firstName,
@@ -18,7 +21,8 @@ export const createPost = async (req, res) => {
 			comment: {}
 		});
 		await newPost.save();
-		const post = await Post.find();
+		const Allpost = await Post.find();
+		const post = await Post.find({ userId });
 		res.status(201).json(post);
 	} catch (e) {
 		res.status(409).json({ message: e.message });
@@ -38,10 +42,13 @@ export const getFeedPosts = async (req, res) => {
 
 export const getUserPosts = async (req, res) => {
 	try {
-		const { userid } = req.body;
+		const { userId } = req.params;
+		console.log(req.params.userId, 'the user post ');
+
 		const post = await Post.find({ userId });
+		console.log(post);
 		res.status(200).json(post);
-	} catch (e) {
+	} catch (err) {
 		res.status(404).json({ message: err.message });
 	}
 };

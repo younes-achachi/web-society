@@ -7,7 +7,7 @@ import {
 	MicOutlined,
 	MoreHorizOutlined
 } from '@mui/icons-material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Divider, Typography, InputBase, useTheme, Button, IconButton, useMediaQuery } from '@mui/material';
 import FlexBetween from 'components/FlexBetween';
 import Dropzone from 'react-dropzone';
@@ -30,22 +30,36 @@ const MyPostWidget = ({ picturePath }) => {
 	const medium = palette.neutral.medium;
 	const handlePost = async () => {
 		const formData = new FormData();
-		formData.append('userId'._id);
+		formData.append('userId', _id);
 		formData.append('description', post);
+
 		if (image) {
+			console.log(image);
 			formData.append('picture', image);
 			formData.append('picturePath', image.name);
 		}
 
-		const response = await fetch('http://locahost:5001/posts', {
+		const response = await fetch('http://localhost:5001/posts/', {
 			method: 'POST',
 			headers: { Authorization: `Bearer ${token}` },
+
 			body: formData
 		});
 		const Posts = await response.json();
-		dispatch(setPosts({ Posts }));
-		setPost('');
+		if (Posts) {
+			dispatch(setPosts({ Posts }));
+			console.log(post);
+			setPost('');
+		}
 	};
+	useEffect(
+		() => () => {
+			// Make sure to revoke the data uris to avoid memory leaks
+			console.log(image, 'the image');
+			image && URL.revokeObjectURL(image.preview);
+		},
+		[ image ]
+	);
 	return (
 		<WidgetWrapper>
 			<FlexBetween gap="1.5rem">
@@ -54,6 +68,8 @@ const MyPostWidget = ({ picturePath }) => {
 					placeholder="What's on your mind..."
 					onChange={(e) => setPost(e.target.value)}
 					value={post}
+					multiline
+					maxRows="10"
 					sx={{
 						width: '100%',
 						backgroundColor: palette.neutral.light,
@@ -63,13 +79,18 @@ const MyPostWidget = ({ picturePath }) => {
 				/>
 
 				{isImage && (
-					<Box border={`1px solid ${medium}`} borderRadius="5px" mt="1rem" p="1rem">
+					<Box border={`1px solid ${medium}`} borderRadius="5px" mt="1rem" p="0.2rem">
 						<Dropzone
 							accept="image/*"
 							multiple={Boolean(null)}
 							onDrop={(acceptedFiles) => {
-								console.log(acceptedFiles);
-								return setImage(acceptedFiles[0]);
+								acceptedFiles.map((file) =>
+									setImage(
+										Object.assign(file, {
+											preview: URL.createObjectURL(file)
+										})
+									)
+								);
 							}}
 						>
 							{({ getRootProps, getInputProps, open }) => (
@@ -77,15 +98,26 @@ const MyPostWidget = ({ picturePath }) => {
 									<Box
 										{...getRootProps()}
 										border={`2px dashed ${palette.primary.main}`}
-										p="1rem"
+										p="0.5rem"
 										width="100%"
+										height="100%"
 										sx={{ '&:hover': { cursor: 'pointer' } }}
 									>
 										<input {...getInputProps()} accept="image/*" />
 										{!image ? (
 											<p>Add Image Here</p>
 										) : (
-											<FlexBetween>{image && <FlexBetween>{open}</FlexBetween>}</FlexBetween>
+											<React.Fragment>
+												{image && (
+													<img
+														src={image.preview}
+														alt={image.name}
+														height="100px"
+														width="100px"
+														style={{ marginBottom: '-5px' }}
+													/>
+												)}
+											</React.Fragment>
 										)}
 									</Box>
 									<FlexBetween
